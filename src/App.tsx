@@ -1,15 +1,20 @@
 import { WritableDraft, produce } from "immer";
 import { useEffect, useState } from "react";
-import ReactSelect, { OptionContext } from "react-select";
+import ReactSelect, { SingleValue } from "react-select";
 import { fetchCountry } from "./apis/country.api";
 import CountryList from "./components/CountryList";
 import { CountryType } from "./types/country.type";
 
+type OptionType = {
+  value: string;
+  label: string;
+};
+
 function App() {
-  const [selectedCountry, setSelectedCountry] = useState<CountryType[]>();
-  const [countries, setCountries] = useState<CountryType[]>();
-  const [countryList, setCountryList] = useState<CountryType[]>();
-  const selectOption = [
+  const [selectedCountry, setSelectedCountry] = useState<CountryType[]>([]);
+  const [countries, setCountries] = useState<CountryType[]>([]);
+  const [countryList, setCountryList] = useState<CountryType[]>([]);
+  const selectOption: OptionType[] = [
     { value: "name", label: "이름 순" },
     { value: "population", label: "인구 순" },
   ];
@@ -22,6 +27,7 @@ function App() {
         return { ...data, isSelected: false };
       });
       setCountryList(countryEdit);
+      setCountries(countryEdit);
     }
     fetch();
   }, []);
@@ -40,19 +46,25 @@ function App() {
   };
 
   //select 박스 클릭 시
-  const handleSelectBoxClick = (option: OptionContext | null) => {
+  const handleSelectBoxClick = (option: SingleValue<OptionType>) => {
     const selectList = countries;
-    if (option.value === "name") {
-      const sortByName = selectList?.sort((a: CountryType, b: CountryType) => {
-        if (a.name.common > b.name.common) return 1;
-        if (a.name.common < b.name.common) return -1;
-      });
+    if (option?.value === "name") {
+      const sortByName = selectList?.sort(
+        (a: CountryType, b: CountryType): number => {
+          if (a.name.common > b.name.common) return 1;
+          if (a.name.common < b.name.common) return -1;
+          else return 0;
+        }
+      );
       return setCountries([...sortByName]);
-    } else if (option.value === "population") {
-      const sortByPop = selectList?.sort((a: CountryType, b: CountryType) => {
-        if (a.population < b.population) return 1;
-        if (a.population > b.population) return -1;
-      });
+    } else if (option?.value === "population") {
+      const sortByPop = selectList?.sort(
+        (a: CountryType, b: CountryType): number => {
+          if (a.population < b.population) return 1;
+          if (a.population > b.population) return -1;
+          else return 0;
+        }
+      );
       return setCountries([...sortByPop]);
     }
   };
